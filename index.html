@@ -1,0 +1,1293 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BXT SNAKE 🐍</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #c3a992;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* =========================================
+       CARTOON START MENU (Worms Zone Style)
+       ========================================= */
+    #startMenu {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(38, 26, 18, 0.88), rgba(16, 10, 6, 0.96));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 120;
+      padding: 16px;
+    }
+    .menu-card {
+      background: linear-gradient(180deg, #322116 0%, #1a100a 100%);
+      border: 4px solid #ffb703;
+      border-radius: 30px;
+      padding: 28px 22px;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), inset 0 3px 8px rgba(255, 183, 3, 0.4);
+      width: 330px;
+      max-width: 92%;
+    }
+    .game-logo {
+      font-size: 34px;
+      font-weight: 900;
+      color: #ffe600;
+      text-shadow: 0 4px 0 #b34700, 0 8px 18px rgba(0,0,0,0.6);
+      margin-bottom: 2px;
+      letter-spacing: 1.5px;
+    }
+    .dev-badge-menu {
+      background: rgba(255, 183, 3, 0.16);
+      border: 1.5px solid #ffbe0b;
+      color: #ffbe0b;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 18px;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .preview-box {
+      width: 100%;
+      height: 75px;
+      background: rgba(0,0,0,0.35);
+      border: 2px dashed rgba(255, 183, 3, 0.45);
+      border-radius: 18px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    #previewCanvas {
+      width: 100%;
+      height: 100%;
+    }
+    .preview-tag {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: #ffe600;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .menu-btn {
+      width: 100%;
+      padding: 14px;
+      margin: 7px 0;
+      border: none;
+      border-radius: 18px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.08s ease;
+    }
+    .btn-battle {
+      background: linear-gradient(180deg, #70e000 0%, #38b000 100%);
+      color: #fff;
+      border: 3px solid #fff;
+      box-shadow: 0 6px 0 #1b6300, 0 10px 20px rgba(0,0,0,0.4);
+      font-size: 18px;
+    }
+    .btn-battle:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #1b6300;
+    }
+    .btn-dev {
+      background: linear-gradient(180deg, #00b4d8 0%, #0077b6 100%);
+      color: #fff;
+      border: 2.5px solid #fff;
+      box-shadow: 0 5px 0 #023e8a, 0 8px 16px rgba(0,0,0,0.35);
+    }
+    .btn-dev:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #023e8a;
+    }
+    .btn-settings {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffbe0b;
+      border: 2px solid #ffbe0b;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .btn-settings:active {
+      transform: translateY(2px);
+    }
+
+    /* =========================================
+       IN-GAME HUD
+       ========================================= */
+    #hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+    }
+    .hud-interactive {
+      pointer-events: auto;
+    }
+    #brandBadge {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26, 17, 12, 0.92);
+      border: 2px solid #ffbe0b;
+      border-radius: 25px;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    #brandBadge span {
+      font-size: 12px;
+      font-weight: 900;
+      color: #ffbe0b;
+    }
+    #brandBadge a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 800;
+      background: #0088cc;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    #scoreBox {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: linear-gradient(180deg, #ffb703 0%, #fb8500 100%);
+      border: 3px solid #fff;
+      border-radius: 20px;
+      padding: 6px 18px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #scoreBox span {
+      font-size: 20px;
+      font-weight: 900;
+      text-shadow: 1px 1px 2px #b34700;
+    }
+    #leaderboard {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(26, 17, 12, 0.9);
+      border: 2px solid rgba(255, 190, 11, 0.4);
+      border-radius: 16px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 11px;
+      min-width: 145px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+    }
+    #leaderboard h3 {
+      color: #ffbe0b;
+      font-size: 11px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding-bottom: 2px;
+      text-align: center;
+    }
+    .lb-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 2px 0;
+    }
+    .lb-self {
+      color: #ffe600;
+      font-weight: 900;
+    }
+    #settingsInGameBtn {
+      position: absolute;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26, 17, 12, 0.9);
+      border: 2px solid #ffbe0b;
+      color: #ffbe0b;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: 900;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Joystick & Boost */
+    #joystickZone {
+      position: absolute;
+      bottom: 25px;
+      left: 20px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      border: 2.5px dashed rgba(255, 190, 11, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    #joystickKnob {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffe600, #ff8400);
+      border: 2.5px solid #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      transform: translate(0px, 0px);
+      pointer-events: none;
+    }
+    #boostBtn {
+      position: absolute;
+      bottom: 25px;
+      right: 25px;
+      width: 85px;
+      height: 85px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #2ec4b6, #0e7b71);
+      border: 3.5px solid #fff;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 0 #074741, 0 10px 18px rgba(0,0,0,0.4);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+    }
+    #boostBtn:active, #boostBtn.active {
+      transform: scale(0.92);
+      box-shadow: 0 2px 0 #074741;
+      filter: brightness(1.2);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(12, 7, 4, 0.86);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 150;
+      padding: 16px;
+    }
+    .modal-box {
+      background: linear-gradient(180deg, #301f14 0%, #170e08 100%);
+      border: 3.5px solid #ffb703;
+      border-radius: 24px;
+      padding: 22px;
+      width: 320px;
+      color: #fff;
+      text-align: center;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.7);
+    }
+    .modal-box h2 {
+      color: #ffb703;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    .setting-group {
+      margin-bottom: 14px;
+      text-align: left;
+      background: rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .setting-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #ddd;
+    }
+    .setting-group input[type=range] {
+      width: 100%;
+      accent-color: #ffbe0b;
+    }
+    .close-btn {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(180deg, #ffb703 0%, #fb8500 100%);
+      border: 2px solid #fff;
+      border-radius: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 10px;
+      color: #fff;
+      box-shadow: 0 4px 0 #b34700;
+    }
+
+    /* Revive Overlay */
+    #reviveOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(14, 8, 5, 0.88);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 140;
+      color: #fff;
+    }
+    #reviveCard {
+      background: linear-gradient(180deg, #301a12 0%, #160c07 100%);
+      border: 3.5px solid #ff0055;
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      max-width: 300px;
+      box-shadow: 0 0 35px rgba(255, 0, 85, 0.5);
+    }
+    #reviveCountdown {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #fb8500;
+      border: 3px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      margin: 12px auto;
+      box-shadow: 0 4px 0 #b34700;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- START SCREEN -->
+  <div id="startMenu">
+    <div class="menu-card">
+      <div class="game-logo">BXT SNAKE 🐍</div>
+      <div class="dev-badge-menu">👑 DEVELOPER: I AM BILAL KING</div>
+
+      <div class="preview-box">
+        <canvas id="previewCanvas"></canvas>
+        <span class="preview-tag">Solid Rubber Tube Body</span>
+      </div>
+
+      <button class="menu-btn btn-battle" id="playBtn">⚔️ TO BATTLE!</button>
+      <button class="menu-btn btn-dev" id="devBtn">👑 DEVELOPER INFO</button>
+      <button class="menu-btn btn-settings" id="menuSettingsBtn">⚙️ SETTINGS</button>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="brandBadge" class="hud-panel">
+      <span>👑 I AM BILAL KING</span>
+      <a href="https://t.me/bilal_babar_982" target="_blank">@bilal_babar_982</a>
+    </div>
+
+    <div id="scoreBox" class="hud-panel">
+      🍎 <span id="scoreText">120</span>
+    </div>
+
+    <div id="leaderboard" class="hud-panel">
+      <h3>🏆 TOP WORMS (40)</h3>
+      <div id="lbList"></div>
+    </div>
+
+    <button id="settingsInGameBtn" class="hud-panel">⚙️ Zoom & Settings</button>
+
+    <div id="joystickZone">
+      <div id="joystickKnob"></div>
+    </div>
+
+    <div id="boostBtn">
+      <span style="font-size: 20px; line-height: 1;">🚀</span>
+      <span style="font-size: 10px; letter-spacing: 0.5px;">BOOST</span>
+    </div>
+  </div>
+
+  <!-- DEVELOPER MODAL -->
+  <div id="devModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>👑 DEVELOPER INFO</h2>
+      <p style="font-size:16px; font-weight:900; color:#ffe600; margin:8px 0;">I AM BILAL KING 👑</p>
+      <p style="color:#ddd; font-size:13px; margin-bottom:14px; line-height:1.4;">Official creator of BXT SNAKE 🐍.<br>Join Telegram for game updates & community!</p>
+      <a href="https://t.me/bilal_babar_982" target="_blank" style="display:block; background:#0088cc; color:#fff; text-decoration:none; padding:11px; border-radius:12px; font-weight:bold; margin-bottom:12px; font-size:14px;">
+        💬 Telegram: @bilal_babar_982
+      </a>
+      <button class="close-btn" id="closeDevModal">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>⚙️ Game Setup</h2>
+      <div class="setting-group">
+        <label>
+          <span>Door View (Camera Zoom):</span>
+          <span id="zoomVal" style="color:#ffbe0b;">0.45x</span>
+        </label>
+        <input type="range" id="zoomRange" min="0.20" max="0.85" step="0.01" value="0.45">
+      </div>
+      <div class="setting-group">
+        <label>
+          <span>Snake Speed:</span>
+          <span id="speedVal" style="color:#ffbe0b;">6.5</span>
+        </label>
+        <input type="range" id="speedRange" min="4.0" max="10.0" step="0.2" value="6.5">
+      </div>
+      <button class="close-btn" id="closeSettings">SAVE & CLOSE</button>
+    </div>
+  </div>
+
+  <!-- REVIVE MODAL -->
+  <div id="reviveOverlay">
+    <div id="reviveCard">
+      <h2 style="color:#ff0055; font-size:24px; margin-bottom:6px;">CRASHED! 😵</h2>
+      <p style="color:#bbb; font-size:12px; margin-bottom:6px;">Aapka snake dusre snake se takra gaya!</p>
+      <div id="reviveCountdown">5</div>
+      <button class="menu-btn btn-battle" id="watchAdBtn" style="font-size:14px; margin-bottom:8px;">🎬 Watch Ad to Revive</button>
+      <button class="menu-btn btn-settings" id="restartBtn" style="font-size:12px;">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Map & Game Parameters
+    const WORLD_RADIUS = 5200;
+    const TOTAL_SNAKES = 40;
+    const BOT_COUNT = TOTAL_SNAKES - 1;
+    const FOOD_COUNT = 900;
+
+    let cameraZoom = 0.45; // Default door view
+    let baseSpeedSetting = 6.5;
+    let isPlaying = false;
+
+    let foods = [];
+    let bots = [];
+    let player = null;
+    let popups = [];
+    let lastTime = performance.now();
+
+    /* =========================================================================
+       40 VIBRANT SOLID RUBBER SKINS (Base, Specular Highlight, Shadow Outline)
+       ========================================================================= */
+    const RUBBER_SKINS = [
+      { base: '#ff7700', highlight: '#ffe600', outline: '#8c3500' }, // 1. Orange Gold
+      { base: '#0077b6', highlight: '#90e0ef', outline: '#023e8a' }, // 2. Royal Blue
+      { base: '#d90429', highlight: '#ff758f', outline: '#590019' }, // 3. Ruby Crimson
+      { base: '#2b9348', highlight: '#95d5b2', outline: '#004b23' }, // 4. Jade Mint
+      { base: '#7209b7', highlight: '#f72585', outline: '#3a0ca3' }, // 5. Cyber Purple
+      { base: '#ff006e', highlight: '#ffbe0b', outline: '#8338ec' }, // 6. Synthwave Pink
+      { base: '#00b4d8', highlight: '#caf0f8', outline: '#005f73' }, // 7. Electric Cyan
+      { base: '#fb8500', highlight: '#ffb703', outline: '#9d0208' }, // 8. Lava Magma
+      { base: '#52b788', highlight: '#d8f3dc', outline: '#1b4332' }, // 9. Forest Emerald
+      { base: '#e63946', highlight: '#f1faee', outline: '#6a040f' }  // 10. Watermelon Coral
+    ];
+
+    for (let i = 11; i <= 40; i++) {
+      const hue = (i * 37) % 360;
+      RUBBER_SKINS.push({
+        base: `hsl(${hue}, 92%, 46%)`,
+        highlight: `hsl(${hue}, 100%, 75%)`,
+        outline: `hsl(${hue}, 100%, 22%)`
+      });
+    }
+
+    const BOT_NAMES = [
+      "SkinnyTiger336", "AwesomeTortoise", "William_Davis", "GangsGeash",
+      "Viper_PK", "Apex_Predator", "Demon_Slayer", "Shadow_X", "Hunter_Pro",
+      "Storm_Trooper", "Blaze_Rider", "Thunder_PK", "Zero_Lag", "Matrix_99",
+      "Titan_PK", "Falcon_X", "Iron_Claw", "Cosmo_Worm", "Tornado_07", "Sniper_Boy",
+      "Nhur_Quynh", "Charles_O'Neill", "Rhys_Miller", "Talha_BxT", "Malik_King",
+      "Zain_Ali", "Striker_PK", "Hyper_Drive", "Samurai_PK", "Mega_Tron"
+    ];
+
+    const TREATS = [
+      { icon: '🍗', val: 5 },
+      { icon: '🧀', val: 4 },
+      { icon: '🍉', val: 3 },
+      { icon: '🍄', val: 2 },
+      { icon: '🍔', val: 4 },
+      { icon: '🧪', val: 5 }
+    ];
+
+    /* =========================================================================
+       SOLID RUBBER TUBE WORM CLASS (MULTI-PASS CONTINUOUS PATH STROKE)
+       ========================================================================= */
+    class SolidRubberWorm {
+      constructor(isPlayer, name, skin, x, y) {
+        this.isPlayer = isPlayer;
+        this.name = name;
+        this.skin = skin;
+        this.x = x;
+        this.y = y;
+        this.angle = Math.random() * Math.PI * 2;
+        this.targetAngle = this.angle;
+        this.speed = baseSpeedSetting;
+        this.isBoosting = false;
+        this.score = isPlayer ? 120 : (45 + Math.floor(Math.random() * 85));
+        this.radius = 23;
+        this.alive = true;
+        this.shield = 3.5;
+
+        this.length = Math.max(38, Math.floor(this.score / 1.6));
+        this.history = [];
+
+        // Dense spine history for smooth bending
+        const initPoints = this.length * 3;
+        for (let i = 0; i < initPoints; i++) {
+          this.history.push({
+            x: this.x - Math.cos(this.angle) * i * 3,
+            y: this.y - Math.sin(this.angle) * i * 3
+          });
+        }
+      }
+
+      update(dt) {
+        if (!this.alive) return;
+        if (this.shield > 0) this.shield -= dt;
+
+        const curSpeed = this.isPlayer ? baseSpeedSetting : 5.8;
+        this.speed = this.isBoosting ? curSpeed * 1.8 : curSpeed;
+
+        if (this.isBoosting && this.score > 30 && Math.random() < 0.22) {
+          this.score -= 0.15;
+          this.length = Math.max(30, Math.floor(this.score / 1.6));
+        }
+
+        let diff = this.targetAngle - this.angle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        this.angle += diff * 8.5 * dt;
+
+        const moveDist = this.speed * 60 * dt;
+        this.x += Math.cos(this.angle) * moveDist;
+        this.y += Math.sin(this.angle) * moveDist;
+
+        // Arena boundary limit
+        const distCenter = Math.hypot(this.x, this.y);
+        if (distCenter > WORLD_RADIUS - 120) {
+          this.targetAngle = Math.atan2(-this.y, -this.x);
+        }
+
+        this.history.unshift({ x: this.x, y: this.y });
+        const maxHist = this.length * 3;
+        if (this.history.length > maxHist) this.history.length = maxHist;
+
+        this.radius = Math.min(45, 19 + Math.sqrt(this.score) * 0.46);
+      }
+
+      render(ctx, camera) {
+        if (!this.alive || this.history.length < 2) return;
+
+        const camZoom = camera.zoom;
+        const pts = [];
+        const step = 2; // High resolution point sample
+        for (let i = 0; i < this.history.length; i += step) {
+          const p = this.history[i];
+          pts.push({
+            x: (p.x - camera.x) * camZoom + width / 2,
+            y: (p.y - camera.y) * camZoom + height / 2
+          });
+        }
+
+        if (pts.length < 2) return;
+
+        const bodyW = this.radius * 2 * camZoom;
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // PASS 1: Outer Shadow Outline (Gives depth, no separate bubbles)
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.strokeStyle = this.skin.outline;
+        ctx.lineWidth = bodyW + 4 * camZoom;
+        ctx.stroke();
+
+        // PASS 2: Solid Continuous Flexible Rubber Tube (Smooth thick cylinder)
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.strokeStyle = this.skin.base;
+        ctx.lineWidth = bodyW;
+        ctx.stroke();
+
+        // PASS 3: Central Glossy Specular Highlight Ribbon (Shiny rubber finish)
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.strokeStyle = this.skin.highlight;
+        ctx.lineWidth = bodyW * 0.38;
+        ctx.stroke();
+
+        // Head Position
+        const hx = pts[0].x;
+        const hy = pts[0].y;
+        const hr = this.radius * camZoom;
+
+        // Head Outer Cap
+        ctx.beginPath();
+        ctx.arc(hx, hy, hr * 1.12, 0, Math.PI * 2);
+        ctx.fillStyle = this.skin.base;
+        ctx.fill();
+        ctx.strokeStyle = this.skin.outline;
+        ctx.lineWidth = 2.5 * camZoom;
+        ctx.stroke();
+
+        // Invulnerability Shield
+        if (this.shield > 0) {
+          ctx.beginPath();
+          ctx.arc(hx, hy, hr * 1.85, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 230, 0, ${0.5 + Math.sin(performance.now() * 0.015) * 0.35})`;
+          ctx.lineWidth = 4 * camZoom;
+          ctx.stroke();
+        }
+
+        // Cartoon Googly Eyes
+        ctx.save();
+        ctx.translate(hx, hy);
+        ctx.rotate(this.angle);
+
+        const eyeOffset = hr * 0.52;
+        const eyeSize = hr * 0.44;
+        const pupilSize = hr * 0.22;
+
+        // Eye Whites
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(hr * 0.42, -eyeOffset, eyeSize, 0, Math.PI * 2);
+        ctx.arc(hr * 0.42, eyeOffset, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth = 1.8 * camZoom;
+        ctx.stroke();
+
+        // Dark Pupils Forward-Facing
+        ctx.fillStyle = '#111111';
+        ctx.beginPath();
+        ctx.arc(hr * 0.58, -eyeOffset, pupilSize, 0, Math.PI * 2);
+        ctx.arc(hr * 0.58, eyeOffset, pupilSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye Light Glints
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(hr * 0.65, -eyeOffset - pupilSize * 0.3, pupilSize * 0.38, 0, Math.PI * 2);
+        ctx.arc(hr * 0.65, eyeOffset - pupilSize * 0.3, pupilSize * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        // Name Tag
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.max(10, 12 * camZoom)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(this.name, hx, hy - hr * 1.4);
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    /* =========================================================================
+       FOOD AND TREAT SPAWNING
+       ========================================================================= */
+    function spawnFood(x, y, val) {
+      if (x === undefined || y === undefined) {
+        const a = Math.random() * Math.PI * 2;
+        const d = Math.random() * (WORLD_RADIUS - 150);
+        x = Math.cos(a) * d;
+        y = Math.sin(a) * d;
+      }
+      const t = TREATS[Math.floor(Math.random() * TREATS.length)];
+      foods.push({
+        x: x,
+        y: y,
+        icon: t.icon,
+        val: val || t.val
+      });
+    }
+
+    function spawnFoodCluster(x, y, count) {
+      for (let i = 0; i < count; i++) {
+        const ox = x + (Math.random() - 0.5) * 140;
+        const oy = y + (Math.random() - 0.5) * 140;
+        spawnFood(ox, oy, 4.0);
+      }
+    }
+
+    /* =========================================================================
+       GAME INITIALIZATION
+       ========================================================================= */
+    function initGame() {
+      foods = [];
+      bots = [];
+      popups = [];
+
+      // Player gets Skin 0 (Orange-Gold Rubber)
+      player = new SolidRubberWorm(true, "I AM BILAL KING 👑", RUBBER_SKINS[0], 0, 0);
+
+      // 39 Unique AI Worms (Total 40 Worms)
+      for (let i = 0; i < BOT_COUNT; i++) {
+        const a = (i / BOT_COUNT) * Math.PI * 2;
+        const dist = 600 + Math.random() * (WORLD_RADIUS - 1200);
+        const bx = Math.cos(a) * dist;
+        const by = Math.sin(a) * dist;
+        const skin = RUBBER_SKINS[(i + 1) % RUBBER_SKINS.length];
+        const name = BOT_NAMES[i % BOT_NAMES.length];
+        const bot = new SolidRubberWorm(false, name, skin, bx, by);
+        bots.push(bot);
+      }
+
+      for (let i = 0; i < FOOD_COUNT; i++) {
+        spawnFood();
+      }
+    }
+
+    function spawnBot(idx) {
+      const a = Math.random() * Math.PI * 2;
+      const dist = 600 + Math.random() * (WORLD_RADIUS - 1200);
+      const skin = RUBBER_SKINS[(idx + 1) % RUBBER_SKINS.length];
+      const name = BOT_NAMES[idx % BOT_NAMES.length];
+      const bot = new SolidRubberWorm(false, name, skin, Math.cos(a) * dist, Math.sin(a) * dist);
+      bots.push(bot);
+    }
+
+    /* =========================================================================
+       AI BOT LOGIC
+       ========================================================================= */
+    function updateBots(dt) {
+      for (let b of bots) {
+        if (!b.alive) continue;
+
+        if (Math.random() < 0.08) {
+          let closest = 500;
+          let target = null;
+          for (let i = 0; i < foods.length; i += 12) {
+            const d = Math.hypot(foods[i].x - b.x, foods[i].y - b.y);
+            if (d < closest) {
+              closest = d;
+              target = foods[i];
+            }
+          }
+          if (target) {
+            b.targetAngle = Math.atan2(target.y - b.y, target.x - b.x);
+          } else if (Math.random() < 0.25) {
+            b.targetAngle += (Math.random() - 0.5) * 1.5;
+          }
+        }
+
+        // Steer away from other worm paths
+        const allWorms = [player, ...bots];
+        for (let other of allWorms) {
+          if (other === b || !other.alive) continue;
+          for (let i = 0; i < other.history.length; i += 8) {
+            const p = other.history[i];
+            if (Math.hypot(p.x - b.x, p.y - b.y) < b.radius + 35) {
+              b.targetAngle = Math.atan2(b.y - p.y, b.x - p.x) + (Math.random() - 0.5);
+              break;
+            }
+          }
+        }
+
+        b.update(dt);
+      }
+    }
+
+    /* =========================================================================
+       COLLISION LOGIC (100% SAFE SELF-CROSSING)
+       ========================================================================= */
+    function handleCollisions() {
+      const allWorms = [player, ...bots];
+
+      // Food Eating
+      for (let s of allWorms) {
+        if (!s.alive) continue;
+        const eatR = s.radius + 18;
+
+        for (let i = foods.length - 1; i >= 0; i--) {
+          const f = foods[i];
+          if (Math.hypot(f.x - s.x, f.y - s.y) < eatR) {
+            s.score += f.val;
+            s.length = Math.max(30, Math.floor(s.score / 1.6));
+
+            if (s.isPlayer && (f.val >= 4 || Math.random() < 0.3)) {
+              popups.push({
+                x: f.x,
+                y: f.y,
+                text: `+${Math.floor(f.val * 50)}`,
+                life: 1.0,
+                color: '#ffe600'
+              });
+            }
+
+            foods.splice(i, 1);
+            if (foods.length < FOOD_COUNT) spawnFood();
+          }
+        }
+      }
+
+      // Worm vs Opponent Head-to-Body Collision (Safe Self-Crossing)
+      for (let s of allWorms) {
+        if (!s.alive || s.shield > 0) continue;
+
+        for (let other of allWorms) {
+          if (s === other || !other.alive) continue; // Immune to own body/tail
+
+          for (let i = 0; i < other.history.length; i += 2) {
+            const p = other.history[i];
+            if (Math.hypot(p.x - s.x, p.y - s.y) < (s.radius + other.radius * 0.72)) {
+              s.alive = false;
+              spawnFoodCluster(s.x, s.y, Math.min(45, Math.floor(s.score / 2)));
+
+              if (s.isPlayer) {
+                triggerReviveOverlay();
+              } else {
+                setTimeout(() => {
+                  const idx = bots.indexOf(s);
+                  if (idx !== -1) {
+                    bots.splice(idx, 1);
+                    spawnBot(idx);
+                  }
+                }, 1800);
+              }
+              break;
+            }
+          }
+          if (!s.alive) break;
+        }
+      }
+    }
+
+    /* =========================================================================
+       REVIVE OVERLAY & LAST CHANCE
+       ========================================================================= */
+    const reviveOverlay = document.getElementById('reviveOverlay');
+    const reviveCountdown = document.getElementById('reviveCountdown');
+    const watchAdBtn = document.getElementById('watchAdBtn');
+    let countdownTimer = null;
+
+    function triggerReviveOverlay() {
+      reviveOverlay.style.display = 'flex';
+      let sec = 5;
+      reviveCountdown.innerText = sec;
+
+      clearInterval(countdownTimer);
+      countdownTimer = setInterval(() => {
+        sec--;
+        if (sec >= 0) {
+          reviveCountdown.innerText = sec;
+        } else {
+          clearInterval(countdownTimer);
+          reviveOverlay.style.display = 'none';
+          initGame();
+        }
+      }, 1000);
+    }
+
+    watchAdBtn.addEventListener('click', () => {
+      clearInterval(countdownTimer);
+      watchAdBtn.style.display = 'none';
+      reviveCountdown.innerText = "🎬";
+
+      setTimeout(() => {
+        reviveOverlay.style.display = 'none';
+        watchAdBtn.style.display = 'block';
+
+        if (player) {
+          player.alive = true;
+          player.shield = 4.5;
+        }
+      }, 1200);
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      clearInterval(countdownTimer);
+      reviveOverlay.style.display = 'none';
+      initGame();
+    });
+
+    /* =========================================================================
+       TOUCH & MOUSE CONTROLS
+       ========================================================================= */
+    const joyZone = document.getElementById('joystickZone');
+    const joyKnob = document.getElementById('joystickKnob');
+    const boostBtn = document.getElementById('boostBtn');
+
+    let joyId = null;
+    let joyCenter = { x: 0, y: 0 };
+
+    joyZone.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      joyId = t.identifier;
+      const r = joyZone.getBoundingClientRect();
+      joyCenter = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      handleJoy(t.clientX, t.clientY);
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      for (let t of e.changedTouches) {
+        if (t.identifier === joyId) handleJoy(t.clientX, t.clientY);
+      }
+    }, { passive: true });
+
+    function resetJoy() {
+      joyId = null;
+      joyKnob.style.transform = 'translate(0px, 0px)';
+    }
+    window.addEventListener('touchend', (e) => {
+      for (let t of e.changedTouches) {
+        if (t.identifier === joyId) resetJoy();
+      }
+    });
+    window.addEventListener('touchcancel', resetJoy);
+
+    function handleJoy(cx, cy) {
+      const dx = cx - joyCenter.x;
+      const dy = cy - joyCenter.y;
+      const dist = Math.hypot(dx, dy);
+      const maxR = 40;
+      let fx = dx, fy = dy;
+      if (dist > maxR) {
+        fx = (dx / dist) * maxR;
+        fy = (dy / dist) * maxR;
+      }
+      joyKnob.style.transform = `translate(${fx}px, ${fy}px)`;
+      if (player && dist > 5) {
+        player.targetAngle = Math.atan2(dy, dx);
+      }
+    }
+
+    boostBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      boostBtn.classList.add('active');
+      if (player) player.isBoosting = true;
+    }, { passive: false });
+
+    boostBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      boostBtn.classList.remove('active');
+      if (player) player.isBoosting = false;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!player || window.innerWidth < 850) return;
+      player.targetAngle = Math.atan2(e.clientY - height / 2, e.clientX - width / 2);
+    });
+    window.addEventListener('mousedown', (e) => {
+      if (player && !e.target.closest('button')) player.isBoosting = true;
+    });
+    window.addEventListener('mouseup', () => {
+      if (player) player.isBoosting = false;
+    });
+
+    /* =========================================================================
+       MENUS & MODAL BUTTON HANDLERS
+       ========================================================================= */
+    const startMenu = document.getElementById('startMenu');
+    const hud = document.getElementById('hud');
+    const devModal = document.getElementById('devModal');
+    const settingsModal = document.getElementById('settingsModal');
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      startMenu.style.display = 'none';
+      hud.style.display = 'block';
+      isPlaying = true;
+      initGame();
+    });
+
+    document.getElementById('devBtn').addEventListener('click', () => {
+      devModal.style.display = 'flex';
+    });
+    document.getElementById('closeDevModal').addEventListener('click', () => {
+      devModal.style.display = 'none';
+    });
+
+    const openSettings = () => { settingsModal.style.display = 'flex'; };
+    document.getElementById('menuSettingsBtn').addEventListener('click', openSettings);
+    document.getElementById('settingsInGameBtn').addEventListener('click', openSettings);
+    document.getElementById('closeSettings').addEventListener('click', () => {
+      settingsModal.style.display = 'none';
+    });
+
+    const zoomRange = document.getElementById('zoomRange');
+    const zoomVal = document.getElementById('zoomVal');
+    const speedRange = document.getElementById('speedRange');
+    const speedVal = document.getElementById('speedVal');
+
+    zoomRange.addEventListener('input', (e) => {
+      cameraZoom = parseFloat(e.target.value);
+      zoomVal.innerText = cameraZoom.toFixed(2) + 'x';
+    });
+    speedRange.addEventListener('input', (e) => {
+      baseSpeedSetting = parseFloat(e.target.value);
+      speedVal.innerText = baseSpeedSetting.toFixed(1);
+    });
+
+    /* =========================================================================
+       PREVIEW WORM ANIMATION (START MENU)
+       ========================================================================= */
+    let previewTime = 0;
+    function renderPreviewWorm() {
+      if (isPlaying) return;
+      previewCanvas.width = previewCanvas.clientWidth;
+      previewCanvas.height = previewCanvas.clientHeight;
+      const pw = previewCanvas.width;
+      const ph = previewCanvas.height;
+
+      previewCtx.clearRect(0, 0, pw, ph);
+      previewTime += 0.05;
+
+      const skin = RUBBER_SKINS[0];
+      const pts = [];
+      const total = 22;
+
+      for (let i = 0; i <= total; i++) {
+        pts.push({
+          x: pw / 2 + (i - total / 2) * 8,
+          y: ph / 2 + Math.sin(previewTime + i * 0.3) * 12
+        });
+      }
+
+      previewCtx.lineCap = 'round';
+      previewCtx.lineJoin = 'round';
+
+      // Outline
+      previewCtx.beginPath();
+      previewCtx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) previewCtx.lineTo(pts[i].x, pts[i].y);
+      previewCtx.strokeStyle = skin.outline;
+      previewCtx.lineWidth = 24;
+      previewCtx.stroke();
+
+      // Body Base
+      previewCtx.beginPath();
+      previewCtx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) previewCtx.lineTo(pts[i].x, pts[i].y);
+      previewCtx.strokeStyle = skin.base;
+      previewCtx.lineWidth = 20;
+      previewCtx.stroke();
+
+      // Specular Ribbon
+      previewCtx.beginPath();
+      previewCtx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) previewCtx.lineTo(pts[i].x, pts[i].y);
+      previewCtx.strokeStyle = skin.highlight;
+      previewCtx.lineWidth = 7;
+      previewCtx.stroke();
+
+      // Head
+      const hx = pts[0].x;
+      const hy = pts[0].y;
+      previewCtx.beginPath();
+      previewCtx.arc(hx, hy, 12, 0, Math.PI * 2);
+      previewCtx.fillStyle = skin.base;
+      previewCtx.fill();
+      previewCtx.strokeStyle = skin.outline;
+      previewCtx.lineWidth = 2;
+      previewCtx.stroke();
+
+      // Eyes
+      previewCtx.fillStyle = '#fff';
+      previewCtx.beginPath();
+      previewCtx.arc(hx - 4, hy - 4, 4.5, 0, Math.PI * 2);
+      previewCtx.arc(hx - 4, hy + 4, 4.5, 0, Math.PI * 2);
+      previewCtx.fill();
+
+      previewCtx.fillStyle = '#111';
+      previewCtx.beginPath();
+      previewCtx.arc(hx - 6, hy - 4, 2, 0, Math.PI * 2);
+      previewCtx.arc(hx - 6, hy + 4, 2, 0, Math.PI * 2);
+      previewCtx.fill();
+
+      requestAnimationFrame(renderPreviewWorm);
+    }
+    renderPreviewWorm();
+
+    /* =========================================================================
+       MAIN 60 FPS GAME LOOP
+       ========================================================================= */
+    function gameLoop(now) {
+      const dt = Math.min(0.08, (now - lastTime) / 1000);
+      lastTime = now;
+
+      if (isPlaying) {
+        if (player && player.alive) player.update(dt);
+        updateBots(dt);
+        handleCollisions();
+
+        const camera = {
+          x: player ? player.x : 0,
+          y: player ? player.y : 0,
+          zoom: cameraZoom
+        };
+
+        // Warm Arena Ground
+        ctx.fillStyle = '#c3a992';
+        ctx.fillRect(0, 0, width, height);
+
+        // Pattern Grid
+        ctx.save();
+        const gridSize = 140 * camera.zoom;
+        const ox = (-camera.x * camera.zoom + width / 2) % gridSize;
+        const oy = (-camera.y * camera.zoom + height / 2) % gridSize;
+
+        ctx.strokeStyle = 'rgba(150, 110, 95, 0.2)';
+        ctx.lineWidth = 3 * camera.zoom;
+        for (let x = ox - gridSize; x < width + gridSize; x += gridSize) {
+          for (let y = oy - gridSize; y < height + gridSize; y += gridSize) {
+            ctx.beginPath();
+            ctx.arc(x, y, 16 * camera.zoom, 0.4, Math.PI * 1.6);
+            ctx.stroke();
+          }
+        }
+
+        // Red Outer Boundary Ring
+        const wcx = (-camera.x) * camera.zoom + width / 2;
+        const wcy = (-camera.y) * camera.zoom + height / 2;
+        ctx.beginPath();
+        ctx.arc(wcx, wcy, WORLD_RADIUS * camera.zoom, 0, Math.PI * 2);
+        ctx.strokeStyle = '#e60039';
+        ctx.lineWidth = 8 * camera.zoom;
+        ctx.stroke();
+        ctx.restore();
+
+        // Treats / Food Items
+        ctx.font = `${Math.max(16, 28 * camera.zoom)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (let f of foods) {
+          const sx = (f.x - camera.x) * camera.zoom + width / 2;
+          const sy = (f.y - camera.y) * camera.zoom + height / 2;
+          if (sx > -30 && sx < width + 30 && sy > -30 && sy < height + 30) {
+            ctx.fillText(f.icon, sx, sy);
+          }
+        }
+
+        // Render Worms
+        for (let b of bots) b.render(ctx, camera);
+        if (player) player.render(ctx, camera);
+
+        // Floating Score Popups
+        for (let i = popups.length - 1; i >= 0; i--) {
+          const p = popups[i];
+          p.life -= dt * 1.5;
+          p.y -= dt * 50;
+          const sx = (p.x - camera.x) * camera.zoom + width / 2;
+          const sy = (p.y - camera.y) * camera.zoom + height / 2;
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.font = `900 ${Math.max(12, 18 * camera.zoom)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.shadowColor = 'rgba(0,0,0,0.7)';
+          ctx.shadowBlur = 4;
+          ctx.fillText(p.text, sx, sy);
+          ctx.restore();
+
+          if (p.life <= 0) popups.splice(i, 1);
+        }
+
+        // HUD Updates
+        if (player) {
+          document.getElementById('scoreText').innerText = Math.floor(player.score);
+
+          const allActive = [player, ...bots].filter(w => w.alive);
+          allActive.sort((a, b) => b.score - a.score);
+
+          let lbHtml = '';
+          for (let i = 0; i < Math.min(5, allActive.length); i++) {
+            const w = allActive[i];
+            const isMe = (w === player);
+            lbHtml += `
+              <div class="lb-row ${isMe ? 'lb-self' : ''}">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px;">${i + 1}. ${w.name}</span>
+                <span style="font-weight:900;">${Math.floor(w.score)}</span>
+              </div>
+            `;
+          }
+          document.getElementById('lbList').innerHTML = lbHtml;
+        }
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
+```
